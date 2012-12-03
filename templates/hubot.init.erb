@@ -1,0 +1,75 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          hubot
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the hubot service
+# Description:       starts the Hubot bot
+### END INIT INFO
+
+test -f <%= @install_dir %>/bin/hubot || exit 0
+
+PIDFILE=/var/run/hubot.pid
+
+. /lib/lsb/init-functions
+
+HUBOT_DIR='<%= @install_dir %>'
+HUBOT_BIN='bin/hubot'
+HUBOT_USER='<%= @user %>'
+HUBOT_ADAPTER='<%= @adapter %>'
+
+. /etc/default/hubot
+export HUBOT_OPTS="-a ${HUBOT_ADAPTER}"
+
+set -e
+
+start_bot ()
+{
+  start-stop-daemon --start --quiet --chuid $HUBOT_USER --chdir $HUBOT_DIR --pidfile $PIDFILE --make-pidfile --background --name hubot --startas $HUBOT_DIR/$HUBOT_BIN -- $LSBNAMES $HUBOT_OPTS
+  log_end_msg $?
+}
+
+stop_bot ()
+{
+  start-stop-daemon --stop --quiet --pidfile $PIDFILE
+  STATUS=$?
+  if [ $STATUS == 0 ]; then
+    rm -r $PIDFILE
+  fi
+  log_end_msg $STATUS
+}
+
+case "$1" in
+start)    log_daemon_msg "Starting Hubot" "hubot"
+          start_bot
+          ;;
+stop)     log_daemon_msg "Stopping Hubot" "hubot"
+          stop_bot
+          ;;
+restart)  log_daemon_msg "Restarting Hubot" "hubot"
+          stop_bot
+          start_bot
+          ;;
+status)   log_action_begin_msg "Checking Hubot"
+          if pidofproc -p "$PIDFILE" >/dev/null; then
+            log_action_end_msg 0 "running"
+            exit 0
+          else
+            if [ -e "$PIDFILE" ]; then
+              log_action_msg 1 "failed to start"
+              exit 1
+            else
+              log_action_end_msg 0 "not running"
+              exit 3
+            fi
+          fi
+          ;;
+*)        log_action_msg "Usage: /etc/init.d/hubot {start|stop|status|restart}"
+          exit 2
+          ;;
+esac
+
+exit 0
