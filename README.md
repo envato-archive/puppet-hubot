@@ -8,7 +8,7 @@ Heroku.
 
 ## Dependencies
 
-See the [Modulefile](Modulefile)
+See the [Modulefile](https://github.com/envato/puppet-hubot/blob/master/Modulefile)
 
 ## Usage
 
