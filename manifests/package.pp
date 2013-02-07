@@ -10,7 +10,8 @@ class hubot::package (
   }
 
   user { $user:
-    gid => $group,
+    home => $install_dir,
+    gid  => $group,
   }
 
   vcsrepo { $install_dir:
